@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.idea/
+.vscode/
+.DS_Store
+
+# Локальные настройки, индекс и рабочие данные пользователя
+data/
+demo/
+
+# Временные файлы Excel
+~$*.xlsx
+
+# Локальные списки библиотек рабочего компьютера
+requirements*.txt

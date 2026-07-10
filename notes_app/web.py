@@ -8,6 +8,7 @@ from typing import Any
 
 from flask import Flask, jsonify, render_template, request, send_file
 
+from . import __version__
 from .config import DATA_DIR, load_settings, save_settings
 from .database import (
     delete_dictionary_entry,
@@ -39,7 +40,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.get("/")
     def index():
-        return render_template("index.html")
+        return render_template("index.html", version=__version__)
 
     @app.get("/api/settings")
     def get_settings():

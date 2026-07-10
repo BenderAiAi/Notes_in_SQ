@@ -175,6 +175,19 @@ def _is_blank(value: Any) -> bool:
     return value is None or (isinstance(value, str) and not value.strip())
 
 
+def _looks_like_transaction(record: dict[str, Any]) -> bool:
+    """Отличает сделку от footer/summary с одиночным итоговым значением."""
+    signals = (
+        record["id"] not in (None, ""),
+        record["trade_date"] is not None,
+        record["settlement_date"] is not None,
+        record["time"] is not None,
+        bool(record["isin"]),
+        record["operation"].casefold() in {"купля", "продажа"},
+    )
+    return sum(signals) >= 2
+
+
 def _load_report_workbook(path: Path) -> Any:
     """Повторяет чтение, пока почтовая программа заканчивает запись файла."""
     last_error: Exception | None = None
@@ -252,6 +265,8 @@ def read_report(path: Path) -> ParsedReport:
                 "price": _parse_decimal(raw["Цена"]),
                 "amount": _parse_decimal(raw["Кол-во"]),
             }
+            if not _looks_like_transaction(record):
+                continue
             result.records.append(record)
     finally:
         workbook.close()

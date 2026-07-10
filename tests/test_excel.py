@@ -110,6 +110,10 @@ def test_optional_summary_in_ninth_column_is_not_a_trade(tmp_path: Path) -> None
         # Первый столбец технический, поэтому «Объем» находится в J.
         # В реальном отчёте эта необязательная строка идёт сразу после сделок.
         sheet.cell(row=4, column=10, value="Итого: 4 636,12")
+        # Дополнительные варианты служебного хвоста также не должны становиться
+        # сделками, если значение оказалось в другом одиночном столбце.
+        sheet.cell(row=5, column=9, value=44)
+        sheet.cell(row=6, column=7, value="Итого")
         workbook.save(source)
     finally:
         workbook.close()

@@ -31,13 +31,16 @@ def scan_reports(source_dir: Path, force: bool = False) -> dict[str, Any]:
     for path in files:
         stat = path.stat()
         cached = None if force else get_cached_file(path, stat.st_size, stat.st_mtime_ns)
-        if cached is not None:
+        if cached is not None and cached.get("latest_trade_date"):
             cached_count += 1
             # Ошибки справочника могли измениться, поэтому валидные данные проверяются заново при генерации.
             payload = cached
         else:
             payload = analyze_report(read_report(path), dictionary)
-            cache_file(path, stat.st_size, stat.st_mtime_ns, payload)
+            # Ошибку открытия или ещё не дописанный почтой файл не фиксируем
+            # в индексе навсегда — следующая проверка попробует прочитать его снова.
+            if payload.get("latest_trade_date"):
+                cache_file(path, stat.st_size, stat.st_mtime_ns, payload)
             read_count += 1
         results.append(payload)
 

@@ -100,3 +100,23 @@ def test_duplicate_trade_id_has_source_row(tmp_path: Path) -> None:
     duplicate = next(issue for issue in analysis["errors"] if issue["code"] == "duplicate_id")
     assert duplicate["row"] == 3
     assert "строке 2" in duplicate["message"]
+
+
+def test_optional_summary_in_ninth_column_is_not_a_trade(tmp_path: Path) -> None:
+    source = make_source(tmp_path / "report_with_summary.xlsx", valid_rows())
+    workbook = load_workbook(source)
+    try:
+        sheet = workbook.active
+        # Первый столбец технический, поэтому «Объем» находится в J.
+        # В реальном отчёте эта необязательная строка идёт сразу после сделок.
+        sheet.cell(row=4, column=10, value="Итого: 4 636,12")
+        workbook.save(source)
+    finally:
+        workbook.close()
+
+    parsed = read_report(source)
+    analysis = analyze_report(parsed, dictionary())
+
+    assert len(parsed.records) == 2
+    assert analysis["summary"]["rows"] == 2
+    assert analysis["can_generate"] is True

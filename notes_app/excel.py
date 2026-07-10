@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import re
+import time as time_module
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
+from zipfile import BadZipFile
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Font, PatternFill
@@ -55,6 +57,21 @@ def _normalize_header(value: Any) -> str:
 
 
 HEADER_LOOKUP = {_normalize_header(header): header for header in SOURCE_HEADERS}
+
+# В конце отчёта может находиться необязательная строка summary со значением
+# только в девятом столбце «Объем». Почтовые программы также иногда оставляют
+# отформатированные хвостовые строки. Они не являются сделками, если все
+# основные поля операции пусты.
+TRANSACTION_FIELDS = (
+    "Номер",
+    "Дата сделки",
+    "Дата расчетов",
+    "Время",
+    "ISIN",
+    "Операция",
+    "Цена",
+    "Кол-во",
+)
 
 
 @dataclass
@@ -154,6 +171,24 @@ def _parse_id(value: Any) -> int | str | None:
     return int(text) if text.isdigit() else text
 
 
+def _is_blank(value: Any) -> bool:
+    return value is None or (isinstance(value, str) and not value.strip())
+
+
+def _load_report_workbook(path: Path) -> Any:
+    """Повторяет чтение, пока почтовая программа заканчивает запись файла."""
+    last_error: Exception | None = None
+    for attempt in range(3):
+        try:
+            return load_workbook(path, read_only=True, data_only=True)
+        except (PermissionError, BadZipFile, OSError) as exc:
+            last_error = exc
+            if attempt < 2:
+                time_module.sleep(0.25 * (attempt + 1))
+    assert last_error is not None
+    raise last_error
+
+
 def _find_header(workbook: Any) -> tuple[Any, int, dict[str, int]] | None:
     for worksheet in workbook.worksheets:
         for row_number, row in enumerate(
@@ -172,9 +207,15 @@ def _find_header(workbook: Any) -> tuple[Any, int, dict[str, int]] | None:
 def read_report(path: Path) -> ParsedReport:
     result = ParsedReport(path=path)
     try:
-        workbook = load_workbook(path, read_only=True, data_only=True)
+        workbook = _load_report_workbook(path)
     except Exception as exc:
-        result.issues.append(Issue("error", "open_failed", f"Не удалось открыть Excel-файл: {exc}"))
+        result.issues.append(
+            Issue(
+                "error",
+                "open_failed",
+                f"Не удалось открыть Excel-файл: {exc}. Возможно, файл ещё сохраняется или занят другой программой. Подождите несколько секунд и повторите проверку.",
+            )
+        )
         return result
     try:
         header = _find_header(workbook)
@@ -198,7 +239,7 @@ def read_report(path: Path) -> ParsedReport:
                 name: values[column - 1] if column - 1 < len(values) else None
                 for name, column in positions.items()
             }
-            if all(raw.get(name) in (None, "") for name in SOURCE_HEADERS):
+            if all(_is_blank(raw.get(name)) for name in TRANSACTION_FIELDS):
                 continue
             record = {
                 "source_row": excel_row,

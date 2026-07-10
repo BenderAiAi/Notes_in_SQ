@@ -12,6 +12,7 @@ from zipfile import BadZipFile
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.utils import get_column_letter
 from openpyxl.utils.datetime import from_excel
 
 
@@ -57,22 +58,6 @@ def _normalize_header(value: Any) -> str:
 
 
 HEADER_LOOKUP = {_normalize_header(header): header for header in SOURCE_HEADERS}
-
-# В конце отчёта может находиться необязательная строка summary со значением
-# только в девятом столбце «Объем». Почтовые программы также иногда оставляют
-# отформатированные хвостовые строки. Они не являются сделками, если все
-# основные поля операции пусты.
-TRANSACTION_FIELDS = (
-    "Номер",
-    "Дата сделки",
-    "Дата расчетов",
-    "Время",
-    "ISIN",
-    "Операция",
-    "Цена",
-    "Кол-во",
-)
-
 
 @dataclass
 class Issue:
@@ -188,6 +173,28 @@ def _looks_like_transaction(record: dict[str, Any]) -> bool:
     return sum(signals) >= 2
 
 
+def _service_row_notice(
+    raw: dict[str, Any], positions: dict[str, int], excel_row: int
+) -> Issue:
+    cells = []
+    for field in SOURCE_HEADERS:
+        value = raw.get(field)
+        if _is_blank(value):
+            continue
+        text = str(value).strip()
+        if len(text) > 80:
+            text = text[:77] + "..."
+        address = f"{get_column_letter(positions[field])}{excel_row}"
+        cells.append(f"{address} ({field}) = «{text}»")
+    details = "; ".join(cells) or "обнаружены служебные значения"
+    return Issue(
+        "notice",
+        "ignored_service_row",
+        f"Строка {excel_row} пропущена как служебная: {details}.",
+        excel_row,
+    )
+
+
 def _load_report_workbook(path: Path) -> Any:
     """Повторяет чтение, пока почтовая программа заканчивает запись файла."""
     last_error: Exception | None = None
@@ -252,7 +259,7 @@ def read_report(path: Path) -> ParsedReport:
                 name: values[column - 1] if column - 1 < len(values) else None
                 for name, column in positions.items()
             }
-            if all(_is_blank(raw.get(name)) for name in TRANSACTION_FIELDS):
+            if all(_is_blank(raw.get(name)) for name in SOURCE_HEADERS):
                 continue
             record = {
                 "source_row": excel_row,
@@ -266,6 +273,7 @@ def read_report(path: Path) -> ParsedReport:
                 "amount": _parse_decimal(raw["Кол-во"]),
             }
             if not _looks_like_transaction(record):
+                result.issues.append(_service_row_notice(raw, positions, excel_row))
                 continue
             result.records.append(record)
     finally:
@@ -382,6 +390,7 @@ def _analysis_payload(parsed: ParsedReport, issues: list[Issue]) -> dict[str, An
         },
         "errors": [issue.as_dict() for issue in issues if issue.level == "error"],
         "warnings": [issue.as_dict() for issue in issues if issue.level == "warning"],
+        "notices": [issue.as_dict() for issue in issues if issue.level == "notice"],
         "can_generate": not any(issue.level == "error" for issue in issues),
     }
 

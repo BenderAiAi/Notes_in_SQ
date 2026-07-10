@@ -109,7 +109,7 @@ def test_optional_summary_in_ninth_column_is_not_a_trade(tmp_path: Path) -> None
         sheet = workbook.active
         # Первый столбец технический, поэтому «Объем» находится в J.
         # В реальном отчёте эта необязательная строка идёт сразу после сделок.
-        sheet.cell(row=4, column=10, value="Итого: 4 636,12")
+        sheet.cell(row=4, column=10, value="Total: 4 636,12")
         # Дополнительные варианты служебного хвоста также не должны становиться
         # сделками, если значение оказалось в другом одиночном столбце.
         sheet.cell(row=5, column=9, value=44)
@@ -124,3 +124,6 @@ def test_optional_summary_in_ninth_column_is_not_a_trade(tmp_path: Path) -> None
     assert len(parsed.records) == 2
     assert analysis["summary"]["rows"] == 2
     assert analysis["can_generate"] is True
+    assert analysis["warnings"] == []
+    assert len(analysis["notices"]) == 3
+    assert "J4 (Объем) = «Total: 4 636,12»" in analysis["notices"][0]["message"]

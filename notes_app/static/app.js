@@ -170,7 +170,7 @@ function renderIssues(report) {
   const generate = $("#generate-button");
   const hint = $("#generate-hint");
   container.innerHTML = "";
-  const issues = [...report.errors, ...report.warnings];
+  const issues = [...report.errors, ...report.warnings, ...(report.notices || [])];
   if (!issues.length) {
     const item = document.createElement("div");
     item.className = "issue ok";
@@ -188,9 +188,12 @@ function renderIssues(report) {
     if (report.errors.length) {
       status.className = "status-pill error";
       status.textContent = `${report.errors.length} ${plural(report.errors.length, "ошибка", "ошибки", "ошибок")}`;
-    } else {
+    } else if (report.warnings.length) {
       status.className = "status-pill warning";
       status.textContent = `${report.warnings.length} ${plural(report.warnings.length, "предупреждение", "предупреждения", "предупреждений")}`;
+    } else {
+      status.className = "status-pill ok";
+      status.textContent = "Готово";
     }
   }
   generate.disabled = !report.can_generate;

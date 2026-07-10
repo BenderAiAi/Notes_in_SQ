@@ -123,6 +123,8 @@ main { max-width: 1320px; padding: 46px 44px 70px; margin: 0 auto; }
 .issue.error::before { background: var(--danger); }
 .issue.warning { background: var(--amber-soft); color: #75500f; }
 .issue.warning::before { background: #c78a2b; }
+.issue.notice { background: var(--blue-soft); color: #315f86; }
+.issue.notice::before { background: #4b83b6; }
 .issue.ok { background: #f0f7f5; color: var(--brand-dark); }
 .issue.ok::before { background: #36a17c; }
 .action-card { padding: 25px; position: sticky; top: 94px; }

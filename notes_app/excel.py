@@ -145,6 +145,15 @@ def _parse_decimal(value: Any) -> Decimal | None:
         return None
 
 
+def _parse_amount(value: Any) -> tuple[int | None, str | None]:
+    parsed = _parse_decimal(value)
+    if parsed is None:
+        return None, "invalid"
+    if parsed != parsed.to_integral_value():
+        return None, "fractional"
+    return int(parsed), None
+
+
 def _parse_id(value: Any) -> int | str | None:
     if value is None or value == "":
         return None
@@ -261,6 +270,7 @@ def read_report(path: Path) -> ParsedReport:
             }
             if all(_is_blank(raw.get(name)) for name in SOURCE_HEADERS):
                 continue
+            amount, amount_error = _parse_amount(raw["Кол-во"])
             record = {
                 "source_row": excel_row,
                 "id": _parse_id(raw["Номер"]),
@@ -270,7 +280,8 @@ def read_report(path: Path) -> ParsedReport:
                 "isin": str(raw["ISIN"] or "").strip().upper(),
                 "operation": str(raw["Операция"] or "").strip(),
                 "price": _parse_decimal(raw["Цена"]),
-                "amount": _parse_decimal(raw["Кол-во"]),
+                "amount": amount,
+                "amount_error": amount_error,
             }
             if not _looks_like_transaction(record):
                 result.issues.append(_service_row_notice(raw, positions, excel_row))
@@ -298,10 +309,29 @@ def analyze_report(parsed: ParsedReport, dictionary: dict[str, dict[str, Any]]) 
             ("id", "Номер"), ("trade_date", "Дата сделки"),
             ("settlement_date", "Дата расчетов"), ("time", "Время"),
             ("isin", "ISIN"), ("operation", "Операция"),
-            ("price", "Цена"), ("amount", "Кол-во"),
+            ("price", "Цена"),
         ):
             if record[key] in (None, ""):
                 issues.append(Issue("error", f"empty_{key}", f"Строка {row}: поле «{label}» не заполнено или имеет неверный формат.", row))
+
+        if record["amount_error"] == "fractional":
+            issues.append(
+                Issue(
+                    "error",
+                    "fractional_amount",
+                    f"Строка {row}: поле «Кол-во» содержит дробное значение. Amount должен быть целым числом.",
+                    row,
+                )
+            )
+        elif record["amount"] is None:
+            issues.append(
+                Issue(
+                    "error",
+                    "empty_amount",
+                    f"Строка {row}: поле «Кол-во» не заполнено или имеет неверный формат.",
+                    row,
+                )
+            )
 
         if record["id"] not in (None, ""):
             if record["id"] in seen_ids:
@@ -416,7 +446,7 @@ def generate_output(parsed: ParsedReport, dictionary: dict[str, dict[str, Any]],
                 record["id"],
                 entry["note_name_sq"],
                 "B" if record["operation"].casefold() == "купля" else "S",
-                float(record["amount"]),
+                int(record["amount"]),
                 float(record["price"]),
                 entry["portfolio"],
                 entry["subportfolio"],
@@ -438,7 +468,7 @@ def generate_output(parsed: ParsedReport, dictionary: dict[str, dict[str, Any]],
     for index, width in enumerate(widths, start=1):
         worksheet.column_dimensions[chr(64 + index)].width = width
     for row in worksheet.iter_rows(min_row=2):
-        row[3].number_format = "0.############"
+        row[3].number_format = "0"
         row[4].number_format = "0.############"
         row[8].number_format = "dd.mm.yyyy hh:mm:ss"
         row[9].number_format = "dd.mm.yyyy hh:mm:ss"

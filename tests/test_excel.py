@@ -127,3 +127,38 @@ def test_optional_summary_in_ninth_column_is_not_a_trade(tmp_path: Path) -> None
     assert analysis["warnings"] == []
     assert len(analysis["notices"]) == 3
     assert "J4 (Объем) = «Total: 4 636,12»" in analysis["notices"][0]["message"]
+
+
+def test_amount_with_trailing_comma_is_written_as_integer_number(tmp_path: Path) -> None:
+    rows = valid_rows()
+    rows[0][7] = "4,"
+    rows[1][7] = "17,"
+    source = make_source(tmp_path / "integer_amounts.xlsx", rows)
+    parsed = read_report(source)
+    analysis = analyze_report(parsed, dictionary())
+
+    assert analysis["can_generate"] is True
+    assert [record["amount"] for record in parsed.records] == [4, 17]
+
+    output = generate_output(parsed, dictionary(), tmp_path / "ready")
+    workbook = load_workbook(output, data_only=True)
+    try:
+        sheet = workbook["note_trades"]
+        assert sheet["D2"].value == 4
+        assert sheet["D3"].value == 17
+        assert sheet["D2"].data_type == "n"
+        assert sheet["D3"].data_type == "n"
+        assert sheet["D2"].number_format == "0"
+    finally:
+        workbook.close()
+
+
+def test_fractional_amount_is_rejected(tmp_path: Path) -> None:
+    rows = valid_rows()
+    rows[0][7] = "4,5"
+    source = make_source(tmp_path / "fractional_amount.xlsx", rows)
+    analysis = analyze_report(read_report(source), dictionary())
+
+    error = next(issue for issue in analysis["errors"] if issue["code"] == "fractional_amount")
+    assert analysis["can_generate"] is False
+    assert "Amount должен быть целым числом" in error["message"]

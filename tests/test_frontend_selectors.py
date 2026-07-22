@@ -49,6 +49,19 @@ def test_termination_action_card_stays_in_its_grid_column() -> None:
     )
 
 
+def test_diagnostics_can_be_collapsed_in_both_reports() -> None:
+    template = _read("notes_app/templates/index.html")
+    app_script = _read("notes_app/static/app.js")
+    terminations_script = _read("notes_app/static/terminations.js")
+
+    assert 'id="diagnostics-toggle"' in template
+    assert 'aria-controls="issues-list"' in template
+    assert '$("#issues-list").classList.toggle("collapsed", expanded)' in app_script
+    assert 'id="term-diagnostics-toggle"' in template
+    assert 'aria-controls="term-issues-list"' in template
+    assert '$("#term-issues-list").classList.toggle("collapsed", expanded)' in terminations_script
+
+
 def test_template_ids_and_references_are_consistent() -> None:
     template = _read("notes_app/templates/index.html")
     ids = re.findall(r'id="([^"]+)"', template)

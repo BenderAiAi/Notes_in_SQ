@@ -138,6 +138,12 @@ main { max-width: 1320px; padding: 46px 44px 70px; margin: 0 auto; }
 .status-pill.ok { background: var(--brand-soft); color: var(--brand); }
 .status-pill.error { background: var(--danger-soft); color: var(--danger); }
 .status-pill.warning { background: var(--amber-soft); color: var(--amber); }
+.diagnostics-heading-actions { display: flex; align-items: center; gap: 9px; }
+.diagnostics-toggle { width: 32px; height: 32px; padding: 0; border: 1px solid var(--line); border-radius: 9px; display: grid; place-items: center; color: var(--muted); background: #fbfcfc; cursor: pointer; transition: color .15s, border-color .15s, background .15s; }
+.diagnostics-toggle:hover { color: var(--brand); border-color: #a9c5c1; background: white; }
+.diagnostics-toggle .chevron { width: 18px; height: 18px; transition: transform .2s; }
+.diagnostics-toggle[aria-expanded="false"] .chevron { transform: rotate(-90deg); }
+.issues-list.collapsed { display: none; }
 .issues-list { margin-top: 17px; display: grid; gap: 8px; }
 .issue { padding: 11px 12px; border-radius: 9px; display: flex; gap: 10px; line-height: 1.4; }
 .issue::before { content: ""; margin-top: 5px; width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; }

@@ -398,6 +398,12 @@ function bindEvents() {
     event.currentTarget.setAttribute("aria-expanded", String(!expanded));
     $("#source-preview-body").classList.toggle("collapsed", expanded);
   });
+  $("#diagnostics-toggle").addEventListener("click", event => {
+    const expanded = event.currentTarget.getAttribute("aria-expanded") === "true";
+    event.currentTarget.setAttribute("aria-expanded", String(!expanded));
+    event.currentTarget.setAttribute("aria-label", expanded ? "Развернуть диагностику" : "Свернуть диагностику");
+    $("#issues-list").classList.toggle("collapsed", expanded);
+  });
   $$(".browse-button", $("#report-tab")).forEach(button => button.addEventListener("click", () => browseFolder(button)));
   $("#scan-button").addEventListener("click", () => scanReports(false));
   $("#choose-file-button").addEventListener("click", () => showFileChooser());

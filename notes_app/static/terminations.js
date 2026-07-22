@@ -405,6 +405,12 @@ function bindEvents() {
     event.currentTarget.setAttribute("aria-expanded", String(!expanded));
     $("#term-settings-body").classList.toggle("collapsed", expanded);
   });
+  $("#term-diagnostics-toggle").addEventListener("click", (event) => {
+    const expanded = event.currentTarget.getAttribute("aria-expanded") === "true";
+    event.currentTarget.setAttribute("aria-expanded", String(!expanded));
+    event.currentTarget.setAttribute("aria-label", expanded ? "Развернуть диагностику" : "Свернуть диагностику");
+    $("#term-issues-list").classList.toggle("collapsed", expanded);
+  });
   $$(".browse-button", $("#term-report-tab")).forEach((button) => button.addEventListener("click", () => browseFolder(button)));
   $("#term-scan-button").addEventListener("click", () => scanReports(false));
   $("#term-choose-file-button").addEventListener("click", () => showFileChooser());

@@ -136,7 +136,12 @@
                   <p class="eyebrow">Контроль качества</p>
                   <h2>Диагностика</h2>
                 </div>
-                <span id="diagnostic-status" class="status-pill">—</span>
+                <div class="diagnostics-heading-actions">
+                  <span id="diagnostic-status" class="status-pill">—</span>
+                  <button id="diagnostics-toggle" class="diagnostics-toggle" type="button" aria-expanded="true" aria-controls="issues-list" aria-label="Свернуть диагностику">
+                    <svg class="chevron" viewBox="0 0 24 24"><path d="m7 14 5-5 5 5"/></svg>
+                  </button>
+                </div>
               </div>
               <div id="issues-list" class="issues-list"></div>
             </section>
@@ -295,7 +300,12 @@
                   <p class="eyebrow">Контроль качества</p>
                   <h2>Диагностика</h2>
                 </div>
-                <span id="term-diagnostic-status" class="status-pill">—</span>
+                <div class="diagnostics-heading-actions">
+                  <span id="term-diagnostic-status" class="status-pill">—</span>
+                  <button id="term-diagnostics-toggle" class="diagnostics-toggle" type="button" aria-expanded="true" aria-controls="term-issues-list" aria-label="Свернуть диагностику">
+                    <svg class="chevron" viewBox="0 0 24 24"><path d="m7 14 5-5 5 5"/></svg>
+                  </button>
+                </div>
               </div>
               <div id="term-issues-list" class="issues-list"></div>
             </section>

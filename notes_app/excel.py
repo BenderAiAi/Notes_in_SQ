@@ -273,6 +273,7 @@ def read_report(path: Path) -> ParsedReport:
             amount, amount_error = _parse_amount(raw["Кол-во"])
             record = {
                 "source_row": excel_row,
+                "source_values": {name: raw.get(name) for name in SOURCE_HEADERS},
                 "id": _parse_id(raw["Номер"]),
                 "trade_date": _parse_date(raw["Дата сделки"]),
                 "settlement_date": _parse_date(raw["Дата расчетов"]),
@@ -418,11 +419,35 @@ def _analysis_payload(parsed: ParsedReport, issues: list[Issue]) -> dict[str, An
             "sell_amount": total(sells),
             "unique_isin": len({record.get("isin") for record in parsed.records if record.get("isin")}),
         },
+        "source_headers": list(SOURCE_HEADERS),
+        "preview_rows": [
+            {
+                "source_row": record["source_row"],
+                "cells": [
+                    _preview_value(record.get("source_values", {}).get(header))
+                    for header in SOURCE_HEADERS
+                ],
+            }
+            for record in parsed.records
+        ],
         "errors": [issue.as_dict() for issue in issues if issue.level == "error"],
         "warnings": [issue.as_dict() for issue in issues if issue.level == "warning"],
         "notices": [issue.as_dict() for issue in issues if issue.level == "notice"],
         "can_generate": not any(issue.level == "error" for issue in issues),
     }
+
+
+def _preview_value(value: Any) -> str:
+    """Готовит исходное значение ячейки для безопасной передачи в интерфейс."""
+    if value is None:
+        return ""
+    if isinstance(value, datetime):
+        return value.strftime("%d.%m.%Y %H:%M:%S")
+    if isinstance(value, date):
+        return value.strftime("%d.%m.%Y")
+    if isinstance(value, time):
+        return value.strftime("%H:%M:%S")
+    return str(value)
 
 
 def generate_output(parsed: ParsedReport, dictionary: dict[str, dict[str, Any]], output_dir: Path) -> Path:

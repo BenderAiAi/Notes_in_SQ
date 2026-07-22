@@ -102,6 +102,24 @@ main { max-width: 1320px; padding: 46px 44px 70px; margin: 0 auto; }
 .file-meta small, .file-meta strong { display: block; }
 .file-meta small { color: var(--muted); font-size: 11px; margin-bottom: 5px; }
 .file-meta strong { font-size: 14px; }
+.source-preview-card { overflow: hidden; }
+.source-preview-toggle { width: 100%; border: 0; background: transparent; padding: 17px 20px; display: flex; align-items: center; justify-content: space-between; color: inherit; cursor: pointer; }
+.source-preview-toggle > span { display: flex; align-items: center; gap: 12px; text-align: left; }
+.source-preview-toggle strong, .source-preview-toggle small { display: block; }
+.source-preview-toggle strong { font-size: 14px; }
+.source-preview-toggle small { color: var(--muted); margin-top: 3px; font-size: 11px; }
+.source-preview-toggle .chevron { transition: transform .2s; }
+.source-preview-toggle[aria-expanded="false"] .chevron { transform: rotate(-90deg); }
+.source-preview-body { border-top: 1px solid var(--line); }
+.source-preview-body.collapsed { display: none; }
+.source-preview-scroll { max-height: 390px; overflow: auto; }
+.source-preview-table { width: max-content; min-width: 100%; table-layout: auto; font-size: 12px; }
+.source-preview-table th { white-space: nowrap; z-index: 3; }
+.source-preview-table td { max-width: 260px; min-width: 105px; padding: 10px 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.source-preview-table th:first-child, .source-preview-table td:first-child { position: sticky; left: 0; min-width: 68px; width: 68px; z-index: 2; }
+.source-preview-table th:first-child { z-index: 4; }
+.source-preview-table td:first-child { background: #fbfcfc; }
+.source-row-number { color: var(--muted); font-variant-numeric: tabular-nums; text-align: center; }
 .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
 .metric-card { min-width: 0; padding: 17px; border-radius: 13px; border: 1px solid var(--line); background: white; display: flex; align-items: center; gap: 13px; }
 .metric-card > span { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; color: var(--brand); background: var(--brand-soft); }
@@ -189,4 +207,56 @@ tbody tr:hover { background: #fafcfc; }
   main { padding-inline: 30px; }
   .settings-grid { padding-left: 20px; }
   .result-layout { grid-template-columns: minmax(0, 1fr) 280px; }
+}
+
+/* Раздел расторжений Dubai/TRS */
+button, input, select { font: inherit; }
+#term-report-tab .result-main { min-width: 0; }
+#term-report-tab .selected-file-card,
+#term-report-tab .diagnostics-card,
+#term-report-tab .contracts-card { padding: 21px; }
+#term-report-tab .file-meta { grid-template-columns: repeat(4, 1fr); }
+#term-report-tab .metrics-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr; }
+#term-report-tab .metric-card { display: block; padding: 17px; }
+#term-report-tab .metric-card small { text-transform: uppercase; letter-spacing: .5px; }
+#term-report-tab .metric-card strong { font-size: 22px; margin: 5px 0 2px; display: block; }
+#term-report-tab .metric-card.rate { background: var(--brand-dark); border-color: var(--brand-dark); color: white; }
+#term-report-tab .metric-card.rate small,
+#term-report-tab .metric-card.rate em { color: rgba(255,255,255,.72); }
+#term-report-tab .metric-card.cyprus.on { background: var(--danger-soft); border-color: #eab8bd; }
+#term-report-tab .metric-card.cyprus.on strong { color: var(--danger); }
+#term-report-tab .issue.alert { background: var(--danger-soft); color: #7f353d; }
+#term-report-tab .issue.alert::before { background: var(--danger); }
+#term-report-tab .table-scroll,
+#term-history-tab .table-scroll { overflow: auto; }
+#term-report-tab table,
+#term-history-tab table { width: max-content; min-width: 100%; table-layout: auto; }
+#term-report-tab th,
+#term-history-tab th { width: auto; white-space: nowrap; }
+#term-report-tab td,
+#term-history-tab td { white-space: nowrap; vertical-align: middle; }
+#term-report-tab td.num,
+#term-history-tab td.num { text-align: right; font-variant-numeric: tabular-nums; }
+#term-report-tab tbody tr.is-cyprus,
+#term-history-tab tbody tr.is-cyprus { background: var(--danger-soft); }
+#term-report-tab tbody tr.not-found { color: var(--muted); }
+#term-report-tab td.mismatch { background: var(--amber-soft); color: #7c520e; font-weight: 650; }
+#term-report-tab td.rate-alert { color: var(--danger); font-weight: 750; }
+.badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge.dubai { background: var(--brand-soft); color: var(--brand); }
+.badge.trs { background: var(--blue-soft); color: var(--blue); }
+.badge.both { background: #efe7fb; color: #6b3fb0; }
+.badge.not_found { background: var(--danger-soft); color: var(--danger); }
+.badge.manual { background: #eef2f1; color: #4a5c5e; }
+.badge.mssp { background: #fdf0e4; color: #9b5a1a; }
+.badge.cyprus { background: var(--danger); color: white; }
+.badge.na { background: #f0f3f2; color: var(--muted); }
+#term-history-tab .history-toolbar { padding: 13px; display: flex; gap: 12px; margin-bottom: 14px; align-items: center; flex-wrap: wrap; }
+#term-history-tab .history-toolbar select,
+#term-history-tab .history-toolbar input[type=date] { height: 40px; border: 1px solid var(--line); border-radius: 9px; padding: 0 11px; background: #fbfcfc; color: var(--ink); outline: 0; }
+#term-history-tab .history-toolbar .spacer { flex: 1; }
+#term-history-tab .table-summary { min-height: 46px; height: auto; padding-block: 10px; gap: 14px; flex-wrap: wrap; }
+
+@media (max-width: 1160px) {
+  #term-report-tab .metrics-grid { grid-template-columns: 1fr 1fr; }
 }

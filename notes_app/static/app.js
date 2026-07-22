@@ -161,7 +161,46 @@ function renderReport(report) {
     alert.className = "alert success";
     alert.innerHTML = `<strong>Дата актуальна.</strong>&nbsp; В файле есть сделки за сегодня — ${formatDate(report.latest_trade_date)}.`;
   }
+  renderSourcePreview(report);
   renderIssues(report);
+}
+
+function renderSourcePreview(report) {
+  const headers = report.source_headers || [];
+  const rows = report.preview_rows || [];
+  const head = $("#source-preview-head");
+  const body = $("#source-preview-rows");
+  head.innerHTML = "";
+  body.innerHTML = "";
+
+  const headerRow = document.createElement("tr");
+  const rowNumberHeader = document.createElement("th");
+  rowNumberHeader.textContent = "Строка";
+  headerRow.append(rowNumberHeader);
+  headers.forEach(header => {
+    const cell = document.createElement("th");
+    cell.textContent = header;
+    headerRow.append(cell);
+  });
+  head.append(headerRow);
+
+  rows.forEach(row => {
+    const tableRow = document.createElement("tr");
+    const rowNumber = document.createElement("td");
+    rowNumber.className = "source-row-number";
+    rowNumber.textContent = row.source_row ?? "";
+    tableRow.append(rowNumber);
+    (row.cells || []).forEach(value => {
+      const cell = document.createElement("td");
+      cell.textContent = value ?? "";
+      cell.title = value ?? "";
+      tableRow.append(cell);
+    });
+    body.append(tableRow);
+  });
+
+  const count = rows.length;
+  $("#source-preview-summary").textContent = `${count} ${plural(count, "строка сделки", "строки сделки", "строк сделок")} · ${headers.length} столбцов`;
 }
 
 function renderIssues(report) {
@@ -353,6 +392,11 @@ function bindEvents() {
     const expanded = event.currentTarget.getAttribute("aria-expanded") === "true";
     event.currentTarget.setAttribute("aria-expanded", String(!expanded));
     $("#settings-body").classList.toggle("collapsed", expanded);
+  });
+  $("#source-preview-toggle").addEventListener("click", event => {
+    const expanded = event.currentTarget.getAttribute("aria-expanded") === "true";
+    event.currentTarget.setAttribute("aria-expanded", String(!expanded));
+    $("#source-preview-body").classList.toggle("collapsed", expanded);
   });
   $$(".browse-button").forEach(button => button.addEventListener("click", () => browseFolder(button)));
   $("#scan-button").addEventListener("click", () => scanReports(false));

@@ -4,6 +4,8 @@ __pycache__/
 .idea/
 .vscode/
 .DS_Store
+.env
+!.env.example
 
 # Локальные настройки, индекс и рабочие данные пользователя
 data/
@@ -14,3 +16,4 @@ demo/
 
 # Локальные списки библиотек рабочего компьютера
 requirements*.txt
+!requirements.txt

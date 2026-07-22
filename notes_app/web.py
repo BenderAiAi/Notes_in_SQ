@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from flask import Flask, jsonify, render_template, request, send_file
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 from . import __version__
 from .config import DATA_DIR, load_settings, save_settings
@@ -26,6 +27,7 @@ from .excel import (
     read_report,
 )
 from .service import scan_reports
+from .terminations.web import create_app as create_terminations_app
 
 
 logger = logging.getLogger("noteflow")
@@ -212,6 +214,11 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     def file_too_large(_error):
         return jsonify({"error": "Файл слишком большой. Максимальный размер — 20 МБ."}), 413
 
+    terminations_app = create_terminations_app()
+    app.wsgi_app = DispatcherMiddleware(
+        app.wsgi_app,
+        {"/terminations": terminations_app.wsgi_app},
+    )
     return app
 
 

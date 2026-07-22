@@ -55,6 +55,10 @@ def test_read_analyze_and_generate_exact_output(tmp_path: Path) -> None:
         "unique_isin": 1,
     }
     assert analysis["latest_trade_date"] == "2026-07-10"
+    assert analysis["source_headers"] == list(SOURCE_HEADERS)
+    assert analysis["preview_rows"][0]["source_row"] == 2
+    assert analysis["preview_rows"][0]["cells"][0] == "2 991 432"
+    assert analysis["preview_rows"][0]["cells"][4] == "XS2777123369"
 
     output = generate_output(parsed, dictionary(), tmp_path / "ready")
     assert output.name == "Note_trades_sq_10072026.xlsx"

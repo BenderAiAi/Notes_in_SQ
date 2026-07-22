@@ -17,8 +17,10 @@
         </span>
       </div>
       <nav class="tabs" aria-label="Разделы">
-        <button class="tab active" data-tab="report">Отчёт</button>
+        <button class="tab active" data-tab="report">Ноты</button>
         <button class="tab" data-tab="dictionary">Справочник</button>
+        <button class="tab" data-tab="term-report">Расторжения</button>
+        <button class="tab" data-tab="term-history">История</button>
       </nav>
       <div class="local-badge"><span></span> v{{ version }} · Локально</div>
     </header>
@@ -89,6 +91,26 @@
                 <span><small>Дата отчёта</small><strong id="selected-date">—</strong></span>
                 <span><small>Изменён</small><strong id="selected-modified">—</strong></span>
                 <span><small>Строк</small><strong id="selected-rows">—</strong></span>
+              </div>
+            </section>
+
+            <section class="card source-preview-card">
+              <button id="source-preview-toggle" class="source-preview-toggle" aria-expanded="true">
+                <span>
+                  <span class="icon-box">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 10h16M9 5v14"/></svg>
+                  </span>
+                  <span><strong>Содержимое исходного файла</strong><small id="source-preview-summary">—</small></span>
+                </span>
+                <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"/></svg>
+              </button>
+              <div id="source-preview-body" class="source-preview-body">
+                <div class="source-preview-scroll">
+                  <table class="source-preview-table">
+                    <thead id="source-preview-head"></thead>
+                    <tbody id="source-preview-rows"></tbody>
+                  </table>
+                </div>
               </div>
             </section>
 
@@ -163,6 +185,163 @@
           <div id="dictionary-empty" class="table-empty hidden">Справочник пока пуст. Добавьте первую ноту или импортируйте Excel.</div>
         </section>
       </section>
+      <section id="term-report-tab" class="tab-panel">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">Ежедневная обработка</p>
+            <h1>Подготовить расторжения</h1>
+            <p>Найдём актуальный файл, сверим с Mongo, посчитаем ставку и соберём отчёты для котировальни.</p>
+          </div>
+          <button id="term-scan-button" class="button button-primary button-large">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
+            Проверить и подготовить
+          </button>
+        </div>
+
+        <section class="card settings-card">
+          <button id="term-settings-toggle" class="card-title-row" aria-expanded="true">
+            <span>
+              <span class="icon-box"><svg viewBox="0 0 24 24"><path d="M4 7h16M7 7V4m10 3V4M4 17h16M9 17v3m6-3v3"/></svg></span>
+              <span><strong>Рабочие папки</strong><small>Настройки сохраняются на этом компьютере</small></span>
+            </span>
+            <svg class="chevron" viewBox="0 0 24 24"><path d="m8 10 4 4 4-4"/></svg>
+          </button>
+          <div id="term-settings-body" class="settings-grid">
+            <label class="field">
+              <span>Папка с файлами расторжений</span>
+              <div class="path-control">
+                <input id="term-source-dir" type="text" placeholder="Например, Z:\...\Расторжения" autocomplete="off">
+                <button class="button button-secondary browse-button" data-target="term-source-dir">Выбрать</button>
+              </div>
+            </label>
+            <label class="field">
+              <span>Папка для готовых отчётов</span>
+              <div class="path-control">
+                <input id="term-output-dir" type="text" placeholder="Например, Z:\...\Для СЗ" autocomplete="off">
+                <button class="button button-secondary browse-button" data-target="term-output-dir">Выбрать</button>
+              </div>
+            </label>
+          </div>
+        </section>
+
+        <div id="term-empty-state" class="empty-state">
+          <div class="empty-illustration">
+            <svg viewBox="0 0 80 80"><path d="M22 14h27l12 12v39H22z"/><path d="M49 14v13h12M31 39h21M31 48h21M31 57h13"/></svg>
+          </div>
+          <h2>Готово к проверке</h2>
+          <p>Укажите папки и нажмите «Проверить и подготовить». Повторная проверка будет быстрой — неизменённые файлы берутся из индекса.</p>
+        </div>
+
+        <section id="term-report-result" class="result-layout hidden">
+          <div class="result-main">
+            <div id="term-date-alert" class="alert hidden"></div>
+
+            <section class="card selected-file-card">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Выбранный файл</p>
+                  <h2 id="term-selected-file-name">—</h2>
+                </div>
+                <button id="term-choose-file-button" class="button button-ghost hidden">Выбрать другой</button>
+              </div>
+              <div class="file-meta">
+                <span><small>Дата расторжения</small><strong id="term-selected-date">—</strong></span>
+                <span><small>Изменён</small><strong id="term-selected-modified">—</strong></span>
+                <span><small>Контрактов</small><strong id="term-selected-rows">—</strong></span>
+                <span><small>Найдено в Mongo</small><strong id="term-selected-found">—</strong></span>
+              </div>
+            </section>
+
+            <section class="metrics-grid" aria-label="Сводка">
+              <article class="metric-card rate"><small>Ставка расторжения</small><strong id="term-rate-avg">—</strong><em id="term-rate-range">сумма ÷ номинал</em></article>
+              <article class="metric-card"><small>Dubai</small><strong id="term-dubai-total">—</strong><em id="term-dubai-split">—</em></article>
+              <article class="metric-card"><small>TRS</small><strong id="term-trs-total">—</strong><em id="term-trs-split">—</em></article>
+              <article class="metric-card cyprus" id="term-cyprus-card"><small>Контракты на Кипре</small><strong id="term-cyprus-count">0</strong><em>подсвечены в таблице</em></article>
+            </section>
+
+            <section class="card contracts-card">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Построчно</p>
+                  <h2>Контракты</h2>
+                </div>
+                <span id="term-not-found-pill" class="status-pill ok">—</span>
+              </div>
+              <div class="table-scroll" style="margin-top:16px; max-height:none;">
+                <table id="term-contracts-table">
+                  <thead><tr>
+                    <th>Контракт</th><th>Тип</th><th>Расторжение</th><th>Дата</th>
+                    <th>Ставка</th><th>Номинал (файл)</th><th>Номинал (Mongo)</th>
+                    <th>Сумма</th><th>Вал.</th><th>Кипр</th>
+                  </tr></thead>
+                  <tbody id="term-contracts-body"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="card diagnostics-card">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Контроль качества</p>
+                  <h2>Диагностика</h2>
+                </div>
+                <span id="term-diagnostic-status" class="status-pill">—</span>
+              </div>
+              <div id="term-issues-list" class="issues-list"></div>
+            </section>
+          </div>
+
+          <aside class="card action-card">
+            <div class="action-icon">
+              <svg viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7zM15 3v5h4M10 13h6M10 17h6"/></svg>
+            </div>
+            <h2>Отчёты для СЗ</h2>
+            <p id="term-output-hint">Будут сохранены в папку готовых отчётов.</p>
+            <ul class="action-files">
+              <li id="term-file-dubai">DD-MM-YYYY-Dubai_term.xlsx</li>
+              <li id="term-file-trs">DD-MM-YYYY-TRS_term.xlsx</li>
+            </ul>
+            <button id="term-generate-button" class="button button-primary button-block" disabled>Сформировать отчёты</button>
+            <p id="term-generate-hint" class="action-hint">Сначала выполните проверку</p>
+          </aside>
+        </section>
+      </section>
+
+      <section id="term-history-tab" class="tab-panel">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">Локальный журнал</p>
+            <h1>История расторжений</h1>
+            <p>Что, когда, по какой ставке и в какой валюте было расторгнуто.</p>
+          </div>
+          <a id="term-history-export" class="button button-secondary button-large" href="/terminations/api/history/export">Экспорт в Excel</a>
+        </div>
+
+        <section class="card history-toolbar">
+          <label class="search-control">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
+            <input id="term-history-search" type="search" placeholder="Поиск по номеру контракта">
+          </label>
+          <select id="term-history-currency"><option value="">Все валюты</option></select>
+          <input id="term-history-from" type="date" title="Дата расторжения с">
+          <input id="term-history-to" type="date" title="Дата расторжения по">
+          <span class="spacer"></span>
+        </section>
+
+        <section class="card table-card">
+          <div class="table-summary"><span id="term-history-count">0 записей</span><span id="term-history-sums"></span></div>
+          <div class="table-scroll">
+            <table>
+              <thead><tr>
+                <th>Дата</th><th>Контракт</th><th>Тип</th><th>Ставка</th><th>Сумма</th>
+                <th>Вал.</th><th>Номинал</th><th>Расторжение</th><th>Кипр</th><th>Файл</th><th>Записано</th>
+              </tr></thead>
+              <tbody id="term-history-body"></tbody>
+            </table>
+          </div>
+          <div id="term-history-empty" class="table-empty hidden">История пуста. Сформируйте первый отчёт на вкладке «Расторжения».</div>
+        </section>
+      </section>
     </main>
   </div>
 
@@ -191,7 +370,16 @@
     </form>
   </div>
 
+  <div id="term-file-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="term-file-modal-title">
+    <div class="modal-backdrop" data-close-modal="term-file-modal"></div>
+    <div class="modal-dialog">
+      <div class="modal-header"><div><p class="eyebrow">Найдено несколько вариантов</p><h2 id="term-file-modal-title">Выберите файл</h2></div><button class="icon-button" data-close-modal="term-file-modal">×</button></div>
+      <div id="term-file-options" class="file-options"></div>
+    </div>
+  </div>
+
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
   <script src="{{ url_for('static', filename='app.js') }}"></script>
+  <script src="{{ url_for('static', filename='terminations.js') }}"></script>
 </body>
 </html>

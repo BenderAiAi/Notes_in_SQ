@@ -1,0 +1,8 @@
+# Все зависимости входят в утвержденный набор рабочего компьютера.
+Flask==2.2.3
+openpyxl==3.1.0
+colorama==0.4.6
+pandas==2.2.3
+python-calamine==0.6.2
+pymongo==4.3.3
+python-dotenv==1.0.1

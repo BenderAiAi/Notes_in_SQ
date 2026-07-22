@@ -186,8 +186,8 @@ function renderReport(report) {
 }
 
 function renderTypeMetric(kind, data) {
-  const total = $(`#${kind}-total`);
-  const split = $(`#${kind}-split`);
+  const total = $(`#term-${kind}-total`);
+  const split = $(`#term-${kind}-split`);
   if (!data) {
     total.textContent = "нет";
     split.textContent = "расторжений нет";

@@ -398,13 +398,13 @@ function bindEvents() {
     event.currentTarget.setAttribute("aria-expanded", String(!expanded));
     $("#source-preview-body").classList.toggle("collapsed", expanded);
   });
-  $$(".browse-button").forEach(button => button.addEventListener("click", () => browseFolder(button)));
+  $$(".browse-button", $("#report-tab")).forEach(button => button.addEventListener("click", () => browseFolder(button)));
   $("#scan-button").addEventListener("click", () => scanReports(false));
   $("#choose-file-button").addEventListener("click", () => showFileChooser());
   $("#generate-button").addEventListener("click", () => generateReport(false));
   $("#add-entry-button").addEventListener("click", () => openEntryForm());
   $("#entry-form").addEventListener("submit", saveEntry);
-  $$('[data-close-modal]').forEach(element => element.addEventListener("click", () => closeModal(element.dataset.closeModal)));
+  $$('#file-modal [data-close-modal], #entry-modal [data-close-modal]').forEach(element => element.addEventListener("click", () => closeModal(element.dataset.closeModal)));
   let searchTimer;
   $("#dictionary-search").addEventListener("input", event => {
     window.clearTimeout(searchTimer);

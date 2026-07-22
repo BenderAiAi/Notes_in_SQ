@@ -216,9 +216,11 @@ tbody tr:hover { background: #fafcfc; }
 /* Раздел расторжений Dubai/TRS */
 button, input, select { font: inherit; }
 #term-report-tab .result-main { min-width: 0; }
+#term-report-tab .action-card { position: static; top: auto; }
 #term-report-tab .selected-file-card,
 #term-report-tab .diagnostics-card,
 #term-report-tab .contracts-card { padding: 21px; }
+#term-report-tab .contracts-card { min-width: 0; }
 #term-report-tab .file-meta { grid-template-columns: repeat(4, 1fr); }
 #term-report-tab .metrics-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr; }
 #term-report-tab .metric-card { display: block; padding: 17px; }

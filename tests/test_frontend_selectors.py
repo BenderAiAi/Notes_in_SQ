@@ -34,6 +34,21 @@ def test_dynamic_type_metric_selectors_use_termination_prefix() -> None:
     assert '$(`#term-${kind}-split`)' in script
 
 
+def test_termination_action_card_stays_in_its_grid_column() -> None:
+    stylesheet = _read("notes_app/static/app.css")
+
+    rule = re.search(
+        r"#term-report-tab\s+\.action-card\s*\{([^}]*)\}", stylesheet
+    )
+
+    assert rule is not None
+    assert "position: static" in rule.group(1)
+    assert re.search(
+        r"#term-report-tab\s+\.contracts-card\s*\{[^}]*min-width:\s*0",
+        stylesheet,
+    )
+
+
 def test_template_ids_and_references_are_consistent() -> None:
     template = _read("notes_app/templates/index.html")
     ids = re.findall(r'id="([^"]+)"', template)

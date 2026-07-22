@@ -33,9 +33,13 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .brand strong, .brand small { display: block; }
 .brand strong { font-size: 16px; letter-spacing: -.2px; }
 .brand small { color: var(--muted); font-size: 11px; margin-top: 2px; }
-.tabs { background: #eef2f1; padding: 4px; border-radius: 11px; display: flex; gap: 2px; }
-.tab { border: 0; padding: 8px 20px; border-radius: 8px; color: var(--muted); background: transparent; cursor: pointer; font-weight: 650; }
-.tab.active { background: white; color: var(--ink); box-shadow: 0 2px 7px rgba(20,48,50,.08); }
+.tabs { display: flex; align-items: center; gap: 12px; }
+.tab-family { display: grid; gap: 3px; }
+.tab-family-label { padding-left: 7px; color: #7b8b8d; font-size: 8px; font-weight: 800; letter-spacing: 1px; line-height: 1; text-transform: uppercase; }
+.tab-group { padding: 3px; border: 1px solid #dfe7e6; border-radius: 11px; background: #eef2f1; display: flex; gap: 1px; box-shadow: inset 0 1px 2px rgba(20,48,50,.025); }
+.tab { min-width: 88px; min-height: 31px; border: 0; padding: 6px 15px; border-radius: 7px; color: var(--muted); background: transparent; cursor: pointer; font-weight: 650; transition: color .15s ease, background .15s ease, box-shadow .15s ease; }
+.tab:hover { color: var(--ink); background: rgba(255,255,255,.55); }
+.tab.active { background: white; color: var(--ink); box-shadow: 0 2px 7px rgba(20,48,50,.1); }
 .local-badge { justify-self: end; color: var(--muted); display: flex; align-items: center; gap: 7px; font-size: 12px; }
 .local-badge span { width: 7px; height: 7px; background: #31a478; border-radius: 50%; box-shadow: 0 0 0 4px #e8f5f0; }
 

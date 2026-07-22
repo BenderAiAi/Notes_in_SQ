@@ -17,10 +17,20 @@
         </span>
       </div>
       <nav class="tabs" aria-label="Разделы">
-        <button class="tab active" data-tab="report">Ноты</button>
-        <button class="tab" data-tab="dictionary">Справочник</button>
-        <button class="tab" data-tab="term-report">Расторжения</button>
-        <button class="tab" data-tab="term-history">История</button>
+        <div class="tab-family">
+          <span class="tab-family-label">Ноты</span>
+          <div class="tab-group" role="group" aria-label="Работа с нотами">
+            <button class="tab active" data-tab="report">Отчёт</button>
+            <button class="tab" data-tab="dictionary">Справочник</button>
+          </div>
+        </div>
+        <div class="tab-family">
+          <span class="tab-family-label">Dubai / TRS</span>
+          <div class="tab-group" role="group" aria-label="Работа с расторжениями">
+            <button class="tab" data-tab="term-report">Расторжения</button>
+            <button class="tab" data-tab="term-history">История</button>
+          </div>
+        </div>
       </nav>
       <div class="local-badge"><span></span> v{{ version }} · Локально</div>
     </header>

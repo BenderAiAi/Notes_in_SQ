@@ -11,6 +11,18 @@ DATA_DIR = Path(os.environ.get("NOTEFLOW_DATA_DIR", PROJECT_ROOT / "data"))
 SETTINGS_PATH = DATA_DIR / "settings.json"
 DATABASE_PATH = DATA_DIR / "noteflow.sqlite3"
 
+
+def load_environment(path: Path | None = None) -> bool:
+    """Загружает локальный .env из корня проекта, не заменяя системные переменные."""
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return False
+    return bool(load_dotenv(path or PROJECT_ROOT / ".env", override=False))
+
+
+load_environment()
+
 DEFAULT_SETTINGS = {
     "source_dir": "",
     "output_dir": "",

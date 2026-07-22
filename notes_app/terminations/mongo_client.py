@@ -33,7 +33,7 @@ def load_mongo_settings() -> MongoSettings:
         deals_db=os.getenv("MONGO_DB_DEALS", "deals_log"),
         deals_collection=os.getenv("MONGO_COLLECTION_DEALS", "dubai"),
         trs_db=os.getenv("MONGO_DB_TRS", "TRS_deals"),
-        trs_collection=os.getenv("MONGO_COLLECTION_TRS", "trs"),
+        trs_collection=os.getenv("MONGO_COLLECTION_TRS", "dubai"),
         timeout_ms=int(os.getenv("MONGO_TIMEOUT_MS", "7000")),
         cy_field=os.getenv("MONGO_FIELD_CY", "fc_num_on_CY_old"),
     )

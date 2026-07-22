@@ -44,7 +44,7 @@ def test_reads_new_format_and_parses_russian_numbers(tmp_path):
 
     clean, report = read_and_clean_excel(str(path))
 
-    assert list(clean["contract_number"]) == ["F6123312321320", "F6012312332112300023"]
+    assert list(clean["contract_number"]) == ["6123312321320", "6012312332112300023"]
     assert list(clean["termination_amount"]) == [15500.0, 3000.0]
     assert list(clean["notional_amount"]) == [15000000.0, 30000000.0]
     assert list(clean["currency"]) == ["CNY", "CNY"]
@@ -69,7 +69,7 @@ def test_header_can_be_below_junk_rows(tmp_path):
 
     clean, report = read_and_clean_excel(str(path))
 
-    assert list(clean["contract_number"]) == ["F1"]
+    assert list(clean["contract_number"]) == ["1"]
     assert list(clean["termination_amount"]) == [2500.0]
     assert report.output_rows == 1
 
@@ -86,11 +86,11 @@ def test_incomplete_rows_are_ignored_and_reported(tmp_path):
 
     clean, report = read_and_clean_excel(str(path))
 
-    assert list(clean["contract_number"]) == ["F1"]
+    assert list(clean["contract_number"]) == ["1"]
     assert report.input_rows == 2
     assert report.output_rows == 1
     assert report.ignored_incomplete_rows == 1
-    assert report.incomplete_row_examples == ["F2"]
+    assert report.incomplete_row_examples == ["2"]
 
 
 def test_duplicate_contract_keeps_first(tmp_path):
@@ -106,9 +106,25 @@ def test_duplicate_contract_keeps_first(tmp_path):
 
     clean, report = read_and_clean_excel(str(path))
 
-    assert list(clean["contract_number"]) == ["F1", "F2"]
+    assert list(clean["contract_number"]) == ["1", "2"]
     assert report.dropped_duplicates == 1
-    assert any("F1" in warning for warning in report.duplicate_warnings)
+    assert any("контракта 1" in warning for warning in report.duplicate_warnings)
+
+
+def test_only_one_leading_f_prefix_is_removed(tmp_path):
+    path = tmp_path / "prefixes.xlsx"
+    _write_excel(
+        path,
+        [
+            ["Created", "17.07.2026", "f123", "1000", "USD", "1", "1000", "USD", "100", "USD"],
+            ["Created", "17.07.2026", "FF456", "1000", "USD", "1", "1000", "USD", "100", "USD"],
+            ["Created", "17.07.2026", "789", "1000", "USD", "1", "1000", "USD", "100", "USD"],
+        ],
+    )
+
+    clean, _report = read_and_clean_excel(str(path))
+
+    assert list(clean["contract_number"]) == ["123", "F456", "789"]
 
 
 def test_missing_required_column_raises(tmp_path):

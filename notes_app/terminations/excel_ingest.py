@@ -169,6 +169,9 @@ def _validate_required_columns(df: pd.DataFrame) -> None:
 def _normalize_contract_number(series: pd.Series) -> pd.Series:
     normalized = series.astype(str).str.strip()
     normalized = normalized.str.replace(r"\.0$", "", regex=True)
+    # Во входной выгрузке номер может иметь технический префикс F,
+    # которого нет в ключах SP_deal / Number в MongoDB.
+    normalized = normalized.str.replace(r"^[Ff]", "", regex=True)
     return normalized.replace({"nan": "", "None": "", "<NA>": "", "NaT": ""})
 
 

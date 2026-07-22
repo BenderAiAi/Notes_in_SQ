@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import pandas as pd
 from pymongo import MongoClient
 from pymongo.collection import Collection
+from pymongo.errors import OperationFailure
 
 
 @dataclass(frozen=True)
@@ -55,6 +56,33 @@ def fetch_contract_data(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     deals_collection, trs_collection = get_collections(client, settings)
 
-    deals_rows = list(deals_collection.find({"SP_deal": {"$in": contract_numbers}}))
-    trs_rows = list(trs_collection.find({"Number": {"$in": contract_numbers}}))
+    deals_rows = _find_contracts(
+        deals_collection,
+        "SP_deal",
+        contract_numbers,
+        f"{settings.deals_db}.{settings.deals_collection}",
+    )
+    trs_rows = _find_contracts(
+        trs_collection,
+        "Number",
+        contract_numbers,
+        f"{settings.trs_db}.{settings.trs_collection}",
+    )
     return pd.DataFrame(deals_rows), pd.DataFrame(trs_rows)
+
+
+def _find_contracts(
+    collection: Collection,
+    field: str,
+    contract_numbers: list[str],
+    namespace: str,
+) -> list[dict]:
+    try:
+        return list(collection.find({field: {"$in": contract_numbers}}))
+    except OperationFailure as exc:
+        if exc.code == 13:
+            raise RuntimeError(
+                f"MongoDB отклонила чтение {namespace}: у пользователя из MONGO_URI "
+                "нет права find для этой коллекции."
+            ) from None
+        raise
